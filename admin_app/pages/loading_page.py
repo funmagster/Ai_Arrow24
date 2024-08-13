@@ -2,7 +2,7 @@ import asyncio
 import cv2
 import numpy as np
 from registry import Registry, Pages
-from func.ml_api import fetch_data
+from func.rooms_api import fetch_data
 from func.music import play_next_track
 import concurrent.futures
 from config import *
@@ -56,7 +56,8 @@ class LoadingScreen(Pages):
             self.current_track = play_next_track(LOADING_MUSIC_PLAYLIST, self.current_track)
 
     async def load_data(self):
-        data = await fetch_data({1: 2})
+        data = {'name': '12346'}
+        data = await fetch_data(data, '/rooms/join_room')
         self.is_loading = False
         return data
 

@@ -1,6 +1,7 @@
 from config import *
 from registry import Registry, Pages
 from func.func_pages import resize_box
+from func.rooms_api import fetch_data
 
 class MainScreen(Pages):
     def __init__(self):
@@ -16,6 +17,7 @@ class MainScreen(Pages):
         self.input_text = ''
         self.state = None
         self.fullscreen = False
+        self.response = None
 
     def draw(self):
         self.set_background()
@@ -62,7 +64,11 @@ class MainScreen(Pages):
                 self.active_textbox = False
                 self.input_animation(end=True)
 
-                if self.input_text == '12345':
+                data = {
+                    'name': self.input_text
+                }
+                # response = fetch_data(data, '/rooms/join_room')
+                if True:
                     self.state = 'settings'
                 else:
                     txt_error = self.font.render("Ключ не подходит!", True, RED)
@@ -79,3 +85,6 @@ class MainScreen(Pages):
                 self.input_text += event.unicode
         self.input_animation(end=not self.active_textbox)
         return self.state
+
+    async def load_data(self, name):
+        ...

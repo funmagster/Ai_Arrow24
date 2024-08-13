@@ -3,6 +3,9 @@ import pygame
 pygame.init()
 
 
+# API
+url_backend = 'http://127.0.0.1:8000'
+
 # Project settings
 prefix = ''
 ICON_PATH = prefix + 'img/icon.png'
