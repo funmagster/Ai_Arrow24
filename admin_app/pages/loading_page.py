@@ -24,8 +24,6 @@ class LoadingScreen(Pages):
         # Получаем размеры видео
         self.video_width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.video_height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        # Пропорции
-        self.video_aspect_ratio = self.video_width / self.video_height
 
     def draw(self):
         if self.is_loading:
@@ -33,10 +31,10 @@ class LoadingScreen(Pages):
             screen_width, screen_height = self.screen.get_size()
             # Вычисляем размеры видео с учетом соотношения сторон
             video_width = screen_width
-            video_height = int(video_width / self.video_aspect_ratio)
+            video_height = int(video_width / ASPECT_RATIO)
             if video_height > screen_height:
                 video_height = screen_height
-                video_width = int(video_height * self.video_aspect_ratio)
+                video_width = int(video_height * ASPECT_RATIO)
             x_offset = (screen_width - video_width) // 2
             y_offset = (screen_height - video_height) // 2
 
