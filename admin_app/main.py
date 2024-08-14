@@ -54,7 +54,7 @@ class Main:
         self.MAX_WIDTH = MAX_WIDTH
         self.MAX_HEIGHT = MAX_HEIGHT
 
-        self.loading_screen_loaded = False
+        self.run_game = False
 
     def resize_screen(self, new_width, new_height):
         screen_mode = pygame.RESIZABLE
@@ -74,7 +74,6 @@ class Main:
 
     async def run(self):
         while True:
-            # Handle events
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.mixer.music.stop()
@@ -85,35 +84,40 @@ class Main:
                     set_width, set_height, mode_screen = self.resize_screen(new_width, new_height)
                     self.screen = pygame.display.set_mode((set_width, set_height), mode_screen)
 
-                result = self.screens[self.current_screen].handle_event(event)
-                if result:
-                    self.current_screen = result
-                    if self.current_screen == 'loading' and not self.loading_screen_loaded:
-                        asyncio.create_task(self.screens['loading'].load_data())
+                states = self.screens[self.current_screen].handle_event(event)
 
-                        pygame.mixer.music.stop()
+                if states['finish_loading']:
+                    states = await self.screens[self.current_screen].finish_load_data()
 
-                        pygame.mixer.music.set_endevent(pygame.USEREVENT + 1)
-                        play_next_track(LOADING_MUSIC_PLAYLIST, 0)
-                        self.loading_screen_loaded = True
-
-            if self.current_screen == 'loading':
-                self.screens[self.current_screen].draw()
-                self.screens[self.current_screen].check_loading_complete()
-                if not self.screens[self.current_screen].is_loading:
+                if states['state']:
+                    self.current_screen = states['state']
                     pygame.mixer.music.stop()
-                    pygame.mixer.music.load(START_MUSIC_PATH)
-                    pygame.mixer.music.set_volume(set_volume_start)
-                    pygame.mixer.music.play(-1)
+                    pygame.mixer.music.set_endevent(pygame.USEREVENT + 1)
+                    play_next_track(LOADING_MUSIC_PLAYLIST[self.current_screen], 0)
 
-                    self.current_screen = 'main'
-                    self.loading_screen_loaded = False
-            else:
+                    if self.current_screen == 'loading' and not self.run_game:
+                        self.run_game = True
+                        room = Registry.get('room')
+                        prompt = Registry.get('prompt')
+                        asyncio.create_task(self.screens['loading'].load_data(
+                            data={"prompt": prompt,
+                                  'room': room},
+                            path='/game/start_game'
+                        ))
+                    elif self.current_screen == 'loading':
+                        room = Registry.get('room')
+                        prompt = Registry.get('prompt')
+                        asyncio.create_task(self.screens['loading'].load_data(
+                            data={"prompt": prompt,
+                                  'room': room},
+                            path='/game/start_game'
+                        ))
+
+            if self.current_screen != 'loading':
                 self.screen.fill(BLACK)
-                self.screens[self.current_screen].draw()
-
+            self.screens[self.current_screen].draw()
             pygame.display.update()
-            await asyncio.sleep(1 / FPS)  # Use asyncio.sleep to avoid blocking
+            await asyncio.sleep(1 / FPS)
 
 
 if __name__ == "__main__":

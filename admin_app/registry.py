@@ -1,5 +1,6 @@
 import pygame
 from func.func_pages import background_resize
+from func.rooms_api import fetch_data
 
 
 class Registry:
@@ -15,6 +16,12 @@ class Registry:
 
 
 class Pages:
+    def __init__(self):
+        self.states = {
+            'state': None, 'is_loading': False,
+            'finish_loading': False, 'ok_loading': True,
+            'response': None
+        }
     def draw(self):
         ...
 
@@ -40,3 +47,8 @@ class Pages:
             self.input_text = self.input_text.replace("|", '')
         else:
             self.input_text += '|'
+
+    async def load_data(self, data, path):
+        self.states['response'] = await fetch_data(data, path)
+        self.states['is_loading'] = False
+        self.states['finish_loading'] = True

@@ -18,14 +18,14 @@ async def get_movie_images(room: Room):
             return HTTPException(status_code=400, detail="The room's already taken")
 
     await insert_room(room.name, room.password, room.count_members)
-    return JSONResponse(status_code=200, content={'success': True})
+    return JSONResponse(status_code=200, content={'status_code': 200, 'success': True})
 
 
 @routers.post("/join_room")
 async def recommend_films(room_name: Room_name):
     ok = await join_room(room_name.name)
     if ok:
-        return JSONResponse(status_code=200, content={'success': True})
+        return JSONResponse(status_code=200, content={'status_code': 200, 'success': True})
     else:
         return HTTPException(status_code=400, detail='Room crowded or not found')
 

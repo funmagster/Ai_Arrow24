@@ -10,12 +10,20 @@ url_backend = 'http://127.0.0.1:8000'
 prefix = ''
 ICON_PATH = prefix + 'img/icon.png'
 LOADING_VIDEO_PATH = prefix + 'video/Loading.mp4'
-START_MUSIC_PATH = prefix + 'aduio/start_screens/Start_screens.mp3'
-LOADING_MUSIC_PLAYLIST = [
-    prefix + 'aduio/loading/Loading-1.mp3',
-    prefix + 'aduio/loading/Loading-2.mp3',
-    prefix + 'aduio/loading/Loading-3.mp3'
-]
+START_MUSIC_PATH = prefix +'aduio/start_screens/Start_screens.mp3'
+LOADING_MUSIC_PLAYLIST = {
+    'loading': [
+        prefix + 'aduio/loading/Loading-1.mp3',
+        prefix + 'aduio/loading/Loading-2.mp3',
+        prefix + 'aduio/loading/Loading-3.mp3'
+    ],
+    'main': [
+        prefix + 'aduio/start_screens/Start_screens.mp3'
+    ],
+    'settings': [
+        prefix + 'aduio/start_screens/Start_screens.mp3'
+    ]
+}
 MIN_WIDTH, MIN_HEIGHT = 960, 540
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)

@@ -1,34 +1,52 @@
+import asyncio
+
 from config import *
 from registry import Registry, Pages
 from func.func_pages import resize_box
-from func.rooms_api import fetch_data
+from func.music import play_next_track
+
+import asyncio
+
 
 class MainScreen(Pages):
     def __init__(self):
+        super().__init__()
         self.background = Registry.get('main_screen_background')
         self.screen = Registry.get('screen')
         self.font = Registry.get('main_page_font')
         self.MAX_WIDTH = Registry.get('MAX_WIDTH')
         self.MAX_HEIGHT = Registry.get('MAX_HEIGHT')
         self.active_textbox = False
+        self.current_track = 0
 
         widht, height = self.screen.get_size()
         self.textbox_rect = self.resize_textbox(widht, height)
         self.input_text = ''
-        self.state = None
         self.fullscreen = False
-        self.response = None
+        self.states = {
+            'state': None, 'is_loading': False,
+            'finish_loading': False, 'ok_loading': True,
+            'response': None
+        }
+
+    def draw_message_text(self, txt_error):
+        if self.fullscreen:
+            self.screen.blit(txt_error, (self.textbox_rect.x + 60, self.textbox_rect.y + 90))
+        else:
+            self.screen.blit(txt_error, (self.textbox_rect.x, self.textbox_rect.y + 60))
 
     def draw(self):
         self.set_background()
-
         widht, height = self.screen.get_size()
         self.textbox_rect = self.resize_textbox(widht, height)
-
         pygame.draw.rect(self.screen, GRAY, self.textbox_rect, 2, 20)
         txt_surface = self.font.render(self.input_text, True, WHITE)
-        self.screen.blit(txt_surface,
-                         (self.textbox_rect.x + self.textbox_rect.w // 2 - 52, self.textbox_rect.y + 8))
+        self.screen.blit(txt_surface, (self.textbox_rect.x + self.textbox_rect.w // 2 - 52, self.textbox_rect.y + 8))
+
+        if self.states['is_loading']:
+            self.draw_message_text(self.font.render("Идет загрузка...", True, RED))
+        elif not self.states['ok_loading']:
+            self.draw_message_text(self.font.render("Ключ не подходит", True, RED))
 
     def resize_textbox(self, new_width, new_height):
         self.fullscreen = False
@@ -47,9 +65,12 @@ class MainScreen(Pages):
         return pygame.Rect(textbox_x, textbox_y, textbox_w, textbox_h)
 
     def handle_event(self, event):
-        self.state = None
+        self.states['state'] = None
 
-        if event.type == pygame.MOUSEBUTTONDOWN:
+        if event.type == pygame.USEREVENT + 1:
+            self.current_track = play_next_track(LOADING_MUSIC_PLAYLIST['main'], self.current_track)
+
+        elif event.type == pygame.MOUSEBUTTONDOWN:
             widht, height = self.screen.get_size()
             textbox_rect = self.resize_textbox(widht, height)
             if textbox_rect.collidepoint(event.pos):
@@ -57,34 +78,29 @@ class MainScreen(Pages):
             else:
                 self.active_textbox = False
 
-        elif event.type == pygame.KEYDOWN and self.active_textbox:
+        elif event.type == pygame.KEYDOWN and self.active_textbox and not self.states['is_loading']:
             if event.key == pygame.K_BACKSPACE:
                 self.input_text = self.input_text[:-1]
             elif event.key == pygame.K_RETURN:
                 self.active_textbox = False
-                self.input_animation(end=True)
-
-                data = {
-                    'name': self.input_text
-                }
-                # response = fetch_data(data, '/rooms/join_room')
-                if True:
-                    self.state = 'settings'
-                else:
-                    txt_error = self.font.render("Ключ не подходит!", True, RED)
-                    if self.fullscreen:
-                        self.screen.blit(txt_error,
-                                         (self.textbox_rect.x + 60, self.textbox_rect.y + 90))
-                    else:
-                        self.screen.blit(txt_error,
-                                         (self.textbox_rect.x, self.textbox_rect.y + 60))
-                    pygame.display.update()
-                    pygame.time.delay(1000)
+                self.states['is_loading'] = True
+                asyncio.create_task(self.load_data(
+                    data={'name': self.input_text.replace('|', '')},
+                    path='/rooms/join_room'
+                ))
 
             elif len(self.input_text) <= 5 and event.unicode.isdigit():
                 self.input_text += event.unicode
         self.input_animation(end=not self.active_textbox)
-        return self.state
+        return self.states
 
-    async def load_data(self, name):
-        ...
+    async def finish_load_data(self):
+        if self.states['response']['status_code'] == 200:
+            self.states['state'] = 'settings'
+            self.states['ok_loading'] = True
+            Registry.set('room', self.input_text.replace('|', ''))
+        else:
+            self.states['ok_loading'] = False
+        self.states['finish_loading'] = False
+
+        return self.states

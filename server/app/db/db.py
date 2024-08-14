@@ -31,7 +31,6 @@ async def join_room(room_name):
     room = cur.fetchone()
 
     ok = False
-    print(room)
     if room and room[2] - room[3] > 0:
         cur.execute(update_room, (room[3] + 1, room[0]))
         conn.commit()
@@ -44,5 +43,15 @@ async def insert_room(name, password, count_members):
     conn = await get_connection()
     cur = conn.cursor()
     cur.execute(insert_room_q, (name, password, count_members, 0))
+    conn.commit()
+    conn.close()
+
+
+async def close_room(room_name):
+    conn = await get_connection()
+    cur = conn.cursor()
+    cur.execute(select_one_room, (room_name, ))
+    room = cur.fetchone()
+    cur.execute(update_room, (room[2] + 1, room[0]))
     conn.commit()
     conn.close()
