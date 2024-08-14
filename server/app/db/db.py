@@ -52,6 +52,9 @@ async def close_room(room_name):
     cur = conn.cursor()
     cur.execute(select_one_room, (room_name, ))
     room = cur.fetchone()
+    active_members = room[3]
     cur.execute(update_room, (room[2] + 1, room[0]))
     conn.commit()
     conn.close()
+
+    return active_members

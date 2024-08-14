@@ -55,6 +55,7 @@ class Main:
         self.MAX_HEIGHT = MAX_HEIGHT
 
         self.run_game = False
+        self.history = []
 
     def resize_screen(self, new_width, new_height):
         screen_mode = pygame.RESIZABLE
