@@ -1,4 +1,5 @@
 import pygame
+import pyaudio
 
 pygame.init()
 
@@ -9,6 +10,7 @@ url_backend = 'http://127.0.0.1:8000'
 # Project settings
 prefix = ''
 ICON_PATH = prefix + 'img/icon.png'
+
 LOADING_VIDEO_PATH = prefix + 'video/Loading.mp4'
 START_MUSIC_PATH = prefix +'aduio/start_screens/Start_screens.mp3'
 LOADING_MUSIC_PLAYLIST = {
@@ -22,6 +24,15 @@ LOADING_MUSIC_PLAYLIST = {
     ],
     'settings': [
         prefix + 'aduio/start_screens/Start_screens.mp3'
+    ],
+    'play': [
+        prefix + 'aduio/play/play-1.mp3',
+        prefix + 'aduio/play/play-2.mp3',
+        prefix + 'aduio/play/play-3.mp3',
+        prefix + 'aduio/play/play-4.mp3',
+        prefix + 'aduio/play/play-5.mp3',
+        prefix + 'aduio/play/play-6.mp3',
+        prefix + 'aduio/play/play-7.mp3',
     ]
 }
 MIN_WIDTH, MIN_HEIGHT = 960, 540
@@ -42,9 +53,23 @@ Settings_Page_RECT_X, Settings_Page_RECT_Y = 200, 200
 Settings_Page_RECT_W, Settings_Page_RECT_H = 570, 240
 Settings_font_size = 40
 
+# Play Page
+Play_font_size = 20
+PLAY_Page_RECT_X, PLAY_Page_RECT_Y = 50, 50
+PLAY_Page_RECT_W, PLAY_Page_RECT_H = 850, 450
+BLACK_OPACITY = (0, 0, 0, 56)
 
+MICROPHONE_ICON = prefix + 'img/microphone.png'
+MICROPHONE_ICON_RECT = (70, 70)
+MICROPHONE_ICON_RECT_indent = (50, 50)
+FORMAT = pyaudio.paInt16
+CHANNELS = 1
+RATE = 16000
+CHUNK = 1024
+RECORD_SECONDS = 5
+WAVE_OUTPUT_FILENAME = "output.wav"
 
-# Определите соотношение сторон
+# ASPECT_RATIO
 ASPECT_RATIO = MIN_WIDTH / MIN_HEIGHT
 
 backgrounds = {
@@ -55,5 +80,6 @@ backgrounds = {
 fonts = {
     'default_font': pygame.font.SysFont(None, 55),
     'main_page_font': pygame.font.SysFont(None, Main_font_size),
-    'settings_page_font': pygame.font.SysFont(None, Settings_font_size)
+    'settings_page_font': pygame.font.SysFont(None, Settings_font_size),
+    'play_page_font': pygame.font.SysFont(None, Play_font_size)
 }

@@ -9,6 +9,7 @@ from config import *
 
 class LoadingScreen(Pages):
     def __init__(self):
+        super().__init__()
         self.screen = Registry.get('screen')
         self.current_frame = 0
         self.cap = cv2.VideoCapture(LOADING_VIDEO_PATH)
@@ -20,7 +21,7 @@ class LoadingScreen(Pages):
         self.states = {
             'state': None, 'is_loading': True,
             'finish_loading': False, 'ok_loading': True,
-            'response': None
+            'response': None, 'first': True
         }
 
     def resize_video(self):
@@ -52,6 +53,7 @@ class LoadingScreen(Pages):
             self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
 
     def handle_event(self, event):
+        self.states['state'] = None
         if event.type == pygame.USEREVENT + 1:
             self.current_track = play_next_track(LOADING_MUSIC_PLAYLIST['loading'], self.current_track)
         return self.states
@@ -61,8 +63,19 @@ class LoadingScreen(Pages):
         self.cap.release()
 
     async def finish_load_data(self):
+        print('вызвано')
         if self.states['response']['status_code'] == 200:
-            self.states['state'] = 'main'
+            if self.states['first']:
+                Registry.set('story', self.states['response']['story'])
+                Registry.set('history', self.states['response']['history'])
+                Registry.set('characters', self.states['response']['characters'])
+                Registry.set('img', self.states['response']['img'])
+                self.states['first'] = False
+            else:
+                Registry.set('answer', self.states['response']['answer'])
+                Registry.set('action', self.states['response']['action'])
+                Registry.set('img', self.states['response']['img'])
+            self.states['state'] = 'play'
             self.states['ok_loading'] = True
         else:
             self.states['ok_loading'] = False

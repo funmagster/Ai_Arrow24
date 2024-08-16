@@ -1,3 +1,5 @@
+import random
+
 import pygame
 import asyncio
 import sys
@@ -43,7 +45,8 @@ class Main:
         self.screens = {
             'main': pages.MainScreen(),
             'settings': pages.SettingsScreen(),
-            'loading': pages.LoadingScreen()
+            'loading': pages.LoadingScreen(),
+            'play': pages.PlayScreen()
         }
         self.current_screen = 'main'
         self.width = MIN_WIDTH
@@ -55,6 +58,7 @@ class Main:
         self.MAX_HEIGHT = MAX_HEIGHT
 
         self.run_game = False
+        self.loading = True
         self.history = []
 
     def resize_screen(self, new_width, new_height):
@@ -94,8 +98,9 @@ class Main:
                     self.current_screen = states['state']
                     pygame.mixer.music.stop()
                     pygame.mixer.music.set_endevent(pygame.USEREVENT + 1)
-                    play_next_track(LOADING_MUSIC_PLAYLIST[self.current_screen], 0)
-
+                    track = random.randint(0, len(LOADING_MUSIC_PLAYLIST[self.current_screen]) - 1)
+                    play_next_track(LOADING_MUSIC_PLAYLIST[self.current_screen], track)
+                    self.screens[self.current_screen].current_track = track
                     if self.current_screen == 'loading' and not self.run_game:
                         self.run_game = True
                         room = Registry.get('room')
@@ -105,14 +110,11 @@ class Main:
                                   'room': room},
                             path='/game/start_game'
                         ))
-                    elif self.current_screen == 'loading':
-                        room = Registry.get('room')
-                        prompt = Registry.get('prompt')
-                        asyncio.create_task(self.screens['loading'].load_data(
-                            data={"prompt": prompt,
-                                  'room': room},
-                            path='/game/start_game'
-                        ))
+                        self.loading = False
+                    elif self.current_screen == 'loading' and self.loading:
+                        self.loading = False
+                        self.screens[self.current_screen].states['state'] = None
+                        self.screens[self.current_screen].states['response'] = None
 
             if self.current_screen != 'loading':
                 self.screen.fill(BLACK)

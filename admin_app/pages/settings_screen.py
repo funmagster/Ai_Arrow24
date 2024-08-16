@@ -3,8 +3,10 @@ from registry import Registry, Pages
 from func.func_pages import draw_text_box, resize_box, get_params_rect
 from func.music import play_next_track
 
+
 class SettingsScreen(Pages):
     def __init__(self):
+        super().__init__()
         self.background = Registry.get('settings_screen_background')
         self.screen = Registry.get('screen')
         self.font = Registry.get('settings_page_font')
@@ -57,6 +59,9 @@ class SettingsScreen(Pages):
 
     def handle_event(self, event):
         self.states['state'] = None
+        if event.type == pygame.USEREVENT + 1:
+            self.current_track = play_next_track(LOADING_MUSIC_PLAYLIST['settings'], self.current_track)
+
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.rect_input_text.collidepoint(event.pos):
                 self.active_textbox = True

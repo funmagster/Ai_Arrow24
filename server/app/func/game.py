@@ -107,6 +107,15 @@ class ObozLLM:
         ]
         return self.llm_model(messages).content
 
+    async def summarize(self, prompt):
+        messages = [
+            SystemMessage(
+                content=prompts["summarize"]
+            ),
+            HumanMessage(content=prompt)
+        ]
+        return self.llm_model(messages).content
+
 
 def split_story(text):
     matches = pattern.findall(text)
