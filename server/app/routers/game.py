@@ -5,7 +5,6 @@ from app.db.db import close_room
 from app.func.game import *
 
 routers = APIRouter()
-from example_answer import example_ans
 
 
 @routers.post("/start_game")

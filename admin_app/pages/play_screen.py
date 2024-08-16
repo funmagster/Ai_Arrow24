@@ -33,6 +33,7 @@ class PlayScreen(Pages):
         self.stream = None
         self.frames = []
         self._init_ui()
+        self.is_finish = False
 
     def _init_ui(self):
         widht, height = self.screen.get_size()
@@ -66,11 +67,11 @@ class PlayScreen(Pages):
             self.text = f"{Registry.get('answer')}\nВаши действия?"
 
         self.set_background()
-        self._draw_ui_elements()
+        if not self.is_finish:
+            self._draw_ui_elements()
 
         if self.states['is_ok_text'] is False:
             self._draw_error_text()
-
 
         widht, height = self.screen.get_size()
         self.rect_input_text = pygame.Rect(
@@ -79,6 +80,14 @@ class PlayScreen(Pages):
                 (PLAY_Page_RECT_X, PLAY_Page_RECT_Y, PLAY_Page_RECT_W, PLAY_Page_RECT_H)
             )
         )
+
+    def _update_history(self):
+        history = Registry.get('history')
+        answer = Registry.get('answer')
+        Registry.set('history', history + answer)
+
+    def _draw_ui_elements(self):
+        widht, height = self.screen.get_size()
         self.microphone_icon = pygame.transform.scale(
             self.microphone_icon, resize_icon(
                 widht, height, MICROPHONE_ICON_RECT
@@ -88,23 +97,6 @@ class PlayScreen(Pages):
             right=widht - MICROPHONE_ICON_RECT_indent[0],
             bottom=height - MICROPHONE_ICON_RECT_indent[1]
         )
-
-        draw_text_box_in_play(
-            self.screen, self.text,
-            get_params_rect(self.rect_input_text),
-            font=self.font,
-            color_rect=BLACK_OPACITY,
-            color_font=WHITE,
-            font_size=Play_font_size
-        )
-        self.screen.blit(self.microphone_icon, self.icon_rect)
-
-    def _update_history(self):
-        history = Registry.get('history')
-        answer = Registry.get('answer')
-        Registry.set('history', history + answer)
-
-    def _draw_ui_elements(self):
         draw_text_box_in_play(
             self.screen, self.text,
             get_params_rect(self.rect_input_text),
@@ -209,7 +201,7 @@ class PlayScreen(Pages):
             Registry.set('action', self.states['response']['action'])
             Registry.set('history', self.states['response']['history'])
             if self.states['response']['action'] == 4:
-                self.states['state'] = 'main'
+                self.is_finish = True
             if not self.states['response']['img'] is None:
                 self.background = None
                 Registry.set('img', self.states['response']['img'])
