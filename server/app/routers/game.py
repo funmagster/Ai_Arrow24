@@ -28,7 +28,7 @@ async def get_start_game(game_start: Game_start):
         'history': story_splits[0],
         'characters': [split_characters(characters)],
         'img': story_img,
-        'music': 2
+        'music': get_music(answer['answer'])
     })
 
 
