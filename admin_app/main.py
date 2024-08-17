@@ -1,68 +1,67 @@
-import random
-
-import pygame
-import asyncio
 import sys
+import pygame
+import requests
 from config import *
+from pygame import font as pygame_font
 from registry import Registry
-import pages
-from func.music import play_next_track
-
+from func import *
 
 def init_app():
     screen_info = pygame.display.Info()
     MAX_WIDTH, MAX_HEIGHT = screen_info.current_w, screen_info.current_h
-    Registry.set('MAX_WIDTH', MAX_WIDTH)
-    Registry.set('MAX_HEIGHT', MAX_HEIGHT)
-    icon = pygame.image.load(ICON_PATH)
+    Registry.set("MAX_WIDTH", MAX_WIDTH)
+    Registry.set("MAX_HEIGHT", MAX_HEIGHT)
+
+    icon = pygame.image.load(ICON)
     pygame.display.set_icon(icon)
 
     screen = pygame.display.set_mode((MIN_WIDTH, MIN_HEIGHT), pygame.RESIZABLE)
-    Registry.set('screen', screen)
-    pygame.display.set_caption("Dungeons and dragons")
+    pygame.display.set_caption(Title)
 
-    Registry.set('FULLSCREEN', False)
-
-    # Set backgrounds
-    for name_background, path_to_background in backgrounds.items():
-        Registry.set(name_background, pygame.image.load(path_to_background))
-
-    # Set fonts
-    for name_font, font in fonts.items():
-        Registry.set(name_font, font)
-
-    pygame.mixer.init()
-    pygame.mixer.music.load(START_MUSIC_PATH)
-    pygame.mixer.music.set_volume(set_volume_start)
-    pygame.mixer.music.play(-1)
-
-    return MAX_WIDTH, MAX_HEIGHT
-
+    return MAX_WIDTH, MAX_HEIGHT, screen
 
 class Main:
-    def __init__(self, MAX_WIDTH, MAX_HEIGHT):
-        pygame.init()
-        self.screens = {
-            'main': pages.MainScreen(),
-            'settings': pages.SettingsScreen(),
-            'loading': pages.LoadingScreen(),
-            'play': pages.PlayScreen()
-        }
-        self.current_screen = 'main'
-        self.width = MIN_WIDTH
-        self.height = MIN_HEIGHT
-        self.screen = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE)
-        self.clock = pygame.time.Clock()
-
+    def __init__(self, MAX_WIDTH, MAX_HEIGHT, screen):
         self.MAX_WIDTH = MAX_WIDTH
         self.MAX_HEIGHT = MAX_HEIGHT
+        self.screen = screen
+        self.input_text = ''
+        self.room_number = ''
+        self.password_text = ''
+        self.background = pygame.image.load(BACKGROUND)
+        self.loading = False
 
-        self.run_game = False
-        self.loading = True
-        self.history = []
+        self.active_input = None
+        self.width = screen.get_width()
+        self.height = screen.get_height()
+
+        self.button_rect = pygame.Rect(RECT_BUTTON)
+        self.input_rect = pygame.Rect(RECT_Q)
+        self.password_rect = pygame.Rect(RECT_PASSWORD)
+        self.font = pygame.font.Font(None, adapt_font_size(self.width))
+
+        self.placeholder_color = (200, 200, 200, 180)  # RGB + Alpha
+
+        # Кнопка для выгрузки в PDF
+        self.pdf_button_rect = pygame.Rect(PDF_BUTTON_REC)
+        self.pdf_button_visible = False
+
+        self.x_room, self.y_room = X_ROOM, Y_ROOM
+        self.clock = pygame.time.Clock()
+
+    def set_background(self):
+        screen_width, screen_height = self.screen.get_size()
+        bg_width, bg_height = self.background.get_size()
+        new_width, new_height, x, y = background_resize(
+            screen_width, screen_height, bg_width, bg_height
+        )
+
+        resized_background = pygame.transform.scale(self.background,
+                                                    (int(new_width),
+                                                     int(new_height)))
+        self.screen.blit(resized_background, (x, y))
 
     def resize_screen(self, new_width, new_height):
-        screen_mode = pygame.RESIZABLE
         if new_width == self.MAX_WIDTH or new_height == self.MAX_HEIGHT:
             self.width = self.MAX_WIDTH - 20
             self.height = self.MAX_HEIGHT - 60
@@ -75,58 +74,117 @@ class Main:
         else:
             self.width = ASPECT_RATIO * new_height
             self.height = new_height
-        return self.width, self.height, screen_mode
 
-    async def run(self):
+        # Адаптация размеров и позиции кнопки
+        new_button_rect = resize_box(self.width, self.height, RECT_BUTTON)
+        self.button_rect = pygame.Rect(new_button_rect)
+
+        # Адаптация размеров и позиции полей ввода
+        new_input_rect = resize_box(self.width, self.height, RECT_Q)
+        self.input_rect = pygame.Rect(new_input_rect)
+
+        new_password_rect = resize_box(self.width, self.height, RECT_PASSWORD)
+        self.password_rect = pygame.Rect(new_password_rect)
+
+        # Адаптация шрифта
+        self.font = pygame.font.Font(None, adapt_font_size(self.width))
+
+        # Установка позиции и размера кнопки "Выгрузить в PDF"
+        new_pdf_button_rect = resize_box(self.width, self.height, PDF_BUTTON_REC)
+        self.pdf_button_rect = pygame.Rect(
+            new_pdf_button_rect
+        )
+
+        # Установка позиции для текста номера комнаты
+        self.x_room, self.y_room = resize_text_pos(self.width, self.height, X_ROOM, Y_ROOM)
+        return self.width, self.height
+
+    def draw(self):
+        self.set_background()
+
+        draw_rect_with_alpha(self.screen, COLOR_TEXT_RECT, self.input_rect, 200, 10)
+        if self.input_text:
+            draw_text(self.input_text, self.font, BLACK, self.screen, self.input_rect.centerx, self.input_rect.centery)
+        else:
+            draw_text("Секретный ключ", self.font, self.placeholder_color, self.screen, self.input_rect.centerx,
+                      self.input_rect.centery)
+
+        draw_rect_with_alpha(self.screen, COLOR_TEXT_RECT, self.password_rect, 180, 10)
+        if self.password_text:
+            draw_text(self.password_text, self.font, BLACK, self.screen, self.password_rect.centerx,
+                      self.password_rect.centery)
+        else:
+            draw_text("Пароль", self.font, self.placeholder_color, self.screen, self.password_rect.centerx,
+                      self.password_rect.centery)
+
+        if self.loading:
+            draw_text("Loading...", self.font, BLACK, self.screen, self.button_rect.centerx, self.button_rect.centery)
+        else:
+            draw_rect_with_alpha(self.screen, COLOR_BUTTON, self.button_rect, 200, 10)
+            draw_text("Сгенерировать комнату", self.font, BLACK, self.screen, self.button_rect.centerx,
+                      self.button_rect.centery)
+
+        if self.room_number:
+            draw_text(self.room_number, self.font, RED, self.screen, self.x_room, self.y_room)
+
+        if self.pdf_button_visible:
+            draw_rect_with_alpha(self.screen, COLOR_BUTTON, self.pdf_button_rect, 200, 10)
+            draw_text("Выгрузить в PDF", self.font, BLACK, self.screen, self.pdf_button_rect.centerx,
+                      self.pdf_button_rect.centery)
+
+    def run(self):
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    pygame.mixer.music.stop()
                     pygame.quit()
                     sys.exit()
                 elif event.type == pygame.VIDEORESIZE:
                     new_width, new_height = event.size
-                    set_width, set_height, mode_screen = self.resize_screen(new_width, new_height)
-                    self.screen = pygame.display.set_mode((set_width, set_height), mode_screen)
+                    set_width, set_height = self.resize_screen(new_width, new_height)
+                    self.screen = pygame.display.set_mode((set_width, set_height), pygame.RESIZABLE)
 
-                states = self.screens[self.current_screen].handle_event(event)
+                if event.type == pygame.KEYDOWN:
+                    if self.active_input == 'input':
+                        if event.key == pygame.K_BACKSPACE:
+                            self.input_text = self.input_text[:-1]
+                        elif len(self.input_text) <= 5:
+                            self.input_text += event.unicode
+                    elif self.active_input == 'password':
+                        if event.key == pygame.K_BACKSPACE:
+                            self.password_text = self.password_text[:-1]
+                        elif len(self.password_text) <= 5:
+                            self.password_text += event.unicode
 
-                if states['finish_loading']:
-                    states = await self.screens[self.current_screen].finish_load_data()
-
-                if states['state']:
-                    self.current_screen = states['state']
-                    pygame.mixer.music.stop()
-                    pygame.mixer.music.set_endevent(pygame.USEREVENT + 1)
-                    track = random.randint(0, len(LOADING_MUSIC_PLAYLIST[self.current_screen]) - 1)
-                    play_next_track(LOADING_MUSIC_PLAYLIST[self.current_screen], track)
-                    self.screens[self.current_screen].current_track = track
-                    if self.current_screen == 'loading' and not self.run_game:
-                        self.run_game = True
-                        room = Registry.get('room')
-                        prompt = Registry.get('prompt')
-                        asyncio.create_task(self.screens['loading'].load_data(
-                            data={"prompt": prompt,
-                                  'room': room},
-                            path='/game/start_game'
-                        ))
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if self.input_rect.collidepoint(event.pos):
+                        self.active_input = 'input'
+                    elif self.password_rect.collidepoint(event.pos):
+                        self.active_input = 'password'
+                    elif self.button_rect.collidepoint(event.pos) and self.input_text != '' and not self.loading:
+                        self.loading = True
+                        self.room_number = 'Loading...'
+                        try:
+                            # Пример запроса
+                            # response = requests.get(f'http://example.com/generate_room?text={self.input_text}')
+                            # self.room_number = f'Ваша комната: {response.text}'
+                            self.room_number = 'Ваша комната: 123'
+                            self.pdf_button_visible = True
+                        except Exception as e:
+                            self.room_number = f'Error: {str(e)}'
                         self.loading = False
-                    elif self.current_screen == 'loading' and self.loading:
-                        self.loading = False
-                        self.screens[self.current_screen].states['state'] = None
-                        self.screens[self.current_screen].states['response'] = None
 
-            if self.current_screen != 'loading':
-                self.screen.fill(BLACK)
-            self.screens[self.current_screen].draw()
+                    elif self.pdf_button_visible and self.pdf_button_rect.collidepoint(event.pos):
+                        # Обработка нажатия на кнопку "Выгрузить в PDF"
+                        print("Выгрузить в PDF")  # Замените это на реальную функцию выгрузки
+
+            self.screen.fill(BLACK)
+            self.draw()
             pygame.display.update()
-            await asyncio.sleep(1 / FPS)
+            self.clock.tick(FPS)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     pygame.init()
-    MAX_WIDTH, MAX_HEIGHT = init_app()
-    app = Main(MAX_WIDTH, MAX_HEIGHT)
-
-    # Run the main loop in an asynchronous event loop
-    asyncio.run(app.run())
+    MAX_WIDTH, MAX_HEIGHT, screen = init_app()
+    app = Main(MAX_WIDTH, MAX_HEIGHT, screen)
+    app.run()
