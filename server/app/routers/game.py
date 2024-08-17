@@ -1,9 +1,10 @@
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
 from app.model.game import *
-from app.db.db import close_room
+from app.db.db import close_room, update_room, insert_history, update_history
 from app.func.game import *
 
+from example_answer import example_ans
 routers = APIRouter()
 
 
@@ -19,13 +20,15 @@ async def get_start_game(game_start: Game_start):
     if story_img is None:
         story_img = await image_to_base64(image_path='default_img.png', format='png')
 
+    await insert_history(game_start.room, story, story_splits[0], characters)
     return JSONResponse(status_code=200, content={
         'status_code': 200,
         'success': True,
         'story': story,
         'history': story_splits[0],
         'characters': [split_characters(characters)],
-        'img': story_img
+        'img': story_img,
+        'music': 2
     })
 
 
@@ -38,7 +41,6 @@ async def get_start_game(game_play: Game_play):
         game_play.character,
         game_play.prompt
     )
-    print(answer)
     try:
         answer = get_json_format(answer)
     except json.decoder.JSONDecodeError as err:
@@ -57,11 +59,13 @@ async def get_start_game(game_play: Game_play):
     new_history = await oboz_LLM.summarize(
         game_play.history + answer['answer'],
     )
+    await update_history(game_play.room, f"{game_play.count_room_complete}:\nИгрок:\n{game_play.prompt}\n\nСреда:\n{answer['answer']}\n\n")
     return JSONResponse(status_code=200, content={
         'status_code': 200,
         'success': True,
         'answer': answer['answer'],
         'action': answer['action'],
         'history': new_history,
-        'img': story_img
+        'img': story_img,
+        'music': get_music(answer['answer'])
     })

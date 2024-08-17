@@ -1,2 +1,5 @@
-async def download_pdf():
-    return 'example_pdf.pdf', 'example_pdf.pdf'
+from app.func.game import *
+
+
+async def download_pdf(name_room):
+    return get_pdf(name_room)

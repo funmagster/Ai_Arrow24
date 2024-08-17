@@ -47,5 +47,5 @@ async def recommend_films(organizer: Organizer):
     ok = await password_check(organizer.name, organizer.password)
     if not ok:
         return HTTPException(status_code=422, detail='Wrong password')
-    file_path, file_name = await download_pdf()
+    file_path, file_name = await download_pdf(organizer.name)
     return FileResponse(path=file_path, filename="file_name.pdf", media_type='application/pdf')

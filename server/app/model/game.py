@@ -7,6 +7,7 @@ class Game_start(BaseModel):
 
 
 class Game_play(BaseModel):
+    room: str
     prompt: str
     character: str
     count_room_complete: int
