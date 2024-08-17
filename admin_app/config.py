@@ -2,7 +2,7 @@ import pygame
 
 pygame.init()
 
-url_backend = 'http://194.87.232.123:8000'
+url_backend = 'http://127.0.0.1:8000'
 MIN_WIDTH, MIN_HEIGHT = 960, 540
 FPS = 30
 ASPECT_RATIO = MIN_WIDTH / MIN_HEIGHT

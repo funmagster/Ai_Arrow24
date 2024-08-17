@@ -5,7 +5,7 @@ pygame.init()
 
 
 # API
-url_backend = 'http://194.87.232.123:8000' #'http://127.0.0.1:8000'
+url_backend = 'http://127.0.0.1:8000'
 
 # Project settings
 prefix = ''

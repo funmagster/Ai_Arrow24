@@ -6,7 +6,10 @@ from app.db.db import create_start_table
 
 
 app = FastAPI(
-    title="DnD"
+    title="DnD",
+    docs_url=None,      # Отключение Swagger UI
+    redoc_url=None,     # Отключение ReDoc
+    openapi_url=None
 )
 
 origins = [
