@@ -5,7 +5,10 @@ import asyncio
 import sys
 from config import *
 from registry import Registry
-import pages
+from pages.main_page import MainScreen
+from pages.settings_screen import SettingsScreen
+from pages.loading_page import LoadingScreen
+from pages.play_screen import PlayScreen
 from func.music import play_next_track
 
 
@@ -43,10 +46,10 @@ class Main:
     def __init__(self, MAX_WIDTH, MAX_HEIGHT):
         pygame.init()
         self.screens = {
-            'main': pages.MainScreen(),
-            'settings': pages.SettingsScreen(),
-            'loading': pages.LoadingScreen(),
-            'play': pages.PlayScreen()
+            'main': MainScreen(),
+            'settings': SettingsScreen(),
+            'loading': LoadingScreen(),
+            'play': PlayScreen()
         }
         self.current_screen = 'main'
         self.width = MIN_WIDTH

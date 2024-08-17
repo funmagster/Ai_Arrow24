@@ -71,3 +71,23 @@ async def password_check(room, password):
         ok = True
     conn.close()
     return ok
+
+
+async def update_history(room, history):
+    conn = await get_connection()
+    cur = conn.cursor()
+    cur.execute(select_history, (room, ))
+    history_old = cur.fetchone()[2]
+    history_new = history_old + history
+    cur.execute(update_history_q, (history_new, room))
+    conn.commit()
+    conn.close()
+
+
+async def insert_history(room, story, history, character):
+    conn = await get_connection()
+    cur = conn.cursor()
+    cur.execute(insert_history_q, (room, story, history, character))
+    conn.commit()
+    conn.close()
+

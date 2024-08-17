@@ -97,6 +97,7 @@ class MainScreen(Pages):
     async def finish_load_data(self):
         if self.states['response']['status_code'] == 200:
             self.states['state'] = 'settings'
+            Registry.set('room', self.input_text.replace('|', ''))
             self.states['ok_loading'] = True
             Registry.set('room', self.input_text.replace('|', ''))
         else:

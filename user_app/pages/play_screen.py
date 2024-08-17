@@ -123,10 +123,10 @@ class PlayScreen(Pages):
         self.states['state'] = None
         if event.type == pygame.USEREVENT + 1:
             self.current_track = play_next_track(LOADING_MUSIC_PLAYLIST['play'], self.current_track)
-        elif event.type == pygame.MOUSEBUTTONDOWN:
+        elif event.type == pygame.MOUSEBUTTONDOWN and not self.is_finish:
             if self.icon_rect.collidepoint(event.pos):
                 self.start_recording()
-        elif event.type == pygame.MOUSEBUTTONUP:
+        elif event.type == pygame.MOUSEBUTTONUP and not self.is_finish:
             if self.icon_rect.collidepoint(event.pos) and self.states['recording']:
                 self.stop_recording()
                 if self.states['is_ok_text']:
@@ -139,6 +139,7 @@ class PlayScreen(Pages):
         characters = '\n\n'.join(Registry.get('characters')[0])
         Registry.set('history', Registry.get('history') + self.states['text'])
         data = {
+            'room': Registry.get('room'),
             'prompt': self.states['text'],
             'character': characters,
             'count_room_complete': self.count_room_complete,
@@ -200,6 +201,9 @@ class PlayScreen(Pages):
             Registry.set('answer', self.states['response']['answer'])
             Registry.set('action', self.states['response']['action'])
             Registry.set('history', self.states['response']['history'])
+
+            self.current_track = play_next_track(LOADING_MUSIC_PLAYLIST['play'], self.states['response']['music'])
+
             if self.states['response']['action'] == 4:
                 self.is_finish = True
             if not self.states['response']['img'] is None:
