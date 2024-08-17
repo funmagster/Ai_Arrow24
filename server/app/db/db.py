@@ -21,7 +21,7 @@ async def get_rooms():
     cur.execute(select_all_rooms)
     result = cur.fetchall()
     conn.close()
-    return result
+    return set(result)
 
 
 async def join_room(room_name):
@@ -58,3 +58,16 @@ async def close_room(room_name):
     conn.close()
 
     return active_members
+
+
+async def password_check(room, password):
+    conn = await get_connection()
+    cur = conn.cursor()
+    cur.execute(select_one_room, (room,))
+    room = cur.fetchone()
+
+    ok = False
+    if room and room[1] == password:
+        ok = True
+    conn.close()
+    return ok

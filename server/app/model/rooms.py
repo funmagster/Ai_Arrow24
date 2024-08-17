@@ -2,9 +2,8 @@ from pydantic import BaseModel
 
 
 class Room(BaseModel):
-    name: str
+    secret: str
     password: str
-    count_members: int
 
 
 class Organizer(BaseModel):

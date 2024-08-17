@@ -6,6 +6,9 @@ from pygame import font as pygame_font
 from registry import Registry
 from func import *
 
+import os
+
+
 def init_app():
     screen_info = pygame.display.Info()
     MAX_WIDTH, MAX_HEIGHT = screen_info.current_w, screen_info.current_h
@@ -28,6 +31,7 @@ class Main:
         self.input_text = ''
         self.room_number = ''
         self.password_text = ''
+        self.room = None
         self.background = pygame.image.load(BACKGROUND)
         self.loading = False
 
@@ -160,22 +164,38 @@ class Main:
                         self.active_input = 'input'
                     elif self.password_rect.collidepoint(event.pos):
                         self.active_input = 'password'
-                    elif self.button_rect.collidepoint(event.pos) and self.input_text != '' and not self.loading:
+                    elif self.button_rect.collidepoint(event.pos) and self.input_text != ''\
+                            and not self.loading and not self.pdf_button_visible:
                         self.loading = True
                         self.room_number = 'Loading...'
                         try:
-                            # Пример запроса
-                            # response = requests.get(f'http://example.com/generate_room?text={self.input_text}')
-                            # self.room_number = f'Ваша комната: {response.text}'
-                            self.room_number = 'Ваша комната: 123'
-                            self.pdf_button_visible = True
+                            param = {
+                                'secret':  self.input_text,
+                                'password': self.password_text,
+                            }
+                            response = requests.post(url_backend + '/rooms/create_room', json=param).json()
+                            if response['status_code'] == 200:
+                                self.room_number = f"Ваша комната: {response['room']}"
+                                self.room = response['room']
+                                self.pdf_button_visible = True
+                            else:
+                                self.room_number = f'Ключ неправильный!'
                         except Exception as e:
                             self.room_number = f'Error: {str(e)}'
                         self.loading = False
 
                     elif self.pdf_button_visible and self.pdf_button_rect.collidepoint(event.pos):
-                        # Обработка нажатия на кнопку "Выгрузить в PDF"
-                        print("Выгрузить в PDF")  # Замените это на реальную функцию выгрузки
+                        param = {
+                            'name': self.room,
+                            'password': self.password_text,
+                        }
+                        response = requests.post(url_backend + '/rooms/download_pdf', json=param)
+                        if response.status_code == 200:
+                            current_directory = os.getcwd()
+                            with open(f"{current_directory}/downloaded_file.pdf", "wb") as f:
+                                f.write(response.content)
+                        else:
+                            print(f"Failed to download file. Status code: {response.status_code}")
 
             self.screen.fill(BLACK)
             self.draw()
