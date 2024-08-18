@@ -91,3 +91,12 @@ async def insert_history(room, story, history, character):
     conn.commit()
     conn.close()
 
+
+async def get_history(room):
+    conn = await get_connection()
+    cur = conn.cursor()
+    cur.execute(select_history, (room, ))
+    history = cur.fetchone()
+    conn.close()
+
+    return history

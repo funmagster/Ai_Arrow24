@@ -15,6 +15,13 @@ import base64
 from PIL import Image
 from io import BytesIO
 
+import numpy as np
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+
+model_emb = SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')
+loaded_play_emb = np.load('plays_emb.npz')
+
 
 class ObozLLM:
     def __init__(self):
@@ -139,6 +146,24 @@ async def image_to_base64(image_path, format):
 
 def get_json_format(json_str):
     return json.loads(json_str)
+
+
+def cosine_sim(embd1, embd2):
+    cosine_sim = cosine_similarity([embd1], [embd2])
+    return cosine_sim[0][0]
+
+
+def get_music(text):
+    embd1 = model_emb.encode(text)
+    maxs = -1
+    play = 0
+    for embd_num in range(1, 7 + 1):
+        cos_sim = cosine_sim(embd1, loaded_play_emb[f'play_{embd_num}_emb'])
+        print(cos_sim)
+        if cos_sim > maxs:
+            maxs = cos_sim
+            play = embd_num - 1
+    return play
 
 
 oboz_LLM = ObozLLM()
