@@ -2,7 +2,6 @@ import pygame
 from func.func_pages import background_resize
 from func.rooms_api import fetch_data
 
-
 class Registry:
     _shared_state = {}
 
