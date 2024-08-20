@@ -1,4 +1,4 @@
-# 🤵‍ User's app
+# 👨‍ User's app
 
 With this app, regular users can, knowing the room number, start playing the game
 
