@@ -78,7 +78,9 @@ The SECRET here is your own key to the organizer app. This is to prevent anyone 
    cd user_app
    python main.py
    ```
-
+   
+4. [Download the video for the user app and paste it into the appropriate directory](https://github.com/funmagster/Ai_Arrow24/blob/main/user_app/video/README.md)
+   
 ---
 
 ## License:
