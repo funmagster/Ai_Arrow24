@@ -66,7 +66,7 @@ Settings_font_size = 40
 Play_font_size = 20
 PLAY_Page_RECT_X, PLAY_Page_RECT_Y = 50, 50
 PLAY_Page_RECT_W, PLAY_Page_RECT_H = 850, 450
-BLACK_OPACITY = (0, 0, 0, 100)
+BLACK_OPACITY = (50, 20, 0, 100)
 PLAY_RECT_VIS_TEXT = (0, 10, 250, 40)
 PLAY_Button_color = (0, 128, 255, 200)
 

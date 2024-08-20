@@ -44,7 +44,7 @@ def string_to_pdf(text, pdf_file):
             text_object = c.beginText(40, height - 40)  # Transferring text to a new page
             text_object.setFont("DejaVuSans", 12)
 
-        for text_highlighter in ("Intent:", "Generated characters:", "History of interaction"):
+        for text_highlighter in ("Замысел:", "Сгенерированные персонажи:", "История взаимодействия"):
             if text_highlighter in line:
                 parts = line.split(text_highlighter)
                 text_object.textOut(parts[0])
@@ -71,11 +71,11 @@ def string_to_pdf(text, pdf_file):
 
 async def download_pdf(name_room):
     history = await get_history(name_room)
-    text = f'Intent:\n{history[1]}\n\n'
+    text = f'Замысел:\n{history[1]}\n\n'
     text += '-'*50
-    text += f'\nGenerated characters:\n\n{history[3]}\n'
+    text += f'\nСгенерированные персонажи:\n\n{history[3]}\n'
     text += '-'*50
-    text += f'\nHistory of interaction:\n\n{history[2]}'
+    text += f'\nИстория взаимодействия:\n\n{history[2]}'
 
     file_name = f'output_room_{name_room}.pdf'
     string_to_pdf(text, file_name)
