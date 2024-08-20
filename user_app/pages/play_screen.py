@@ -39,6 +39,9 @@ class PlayScreen(Pages):
         self.frames = []
         self.is_finish = False
 
+        self.toggle_button = pygame.Rect(PLAY_RECT_VIS_TEXT)
+        self.is_text_visible = True
+
         # Initialize UI components
         self._init_ui()
 
@@ -110,25 +113,36 @@ class PlayScreen(Pages):
             bottom=height - MICROPHONE_ICON_RECT_indent[1]
         )
 
-        # Draw text box and microphone icon
-        draw_text_box_in_play(
-            self.screen, self.text,
-            get_params_rect(self.rect_input_text),
-            font=self.font,
-            color_rect=BLACK_OPACITY,
-            color_font=WHITE,
-            font_size=Play_font_size
-        )
+        # Draw text box and microphone icon only if text is visible
+        if self.is_text_visible:
+            draw_text_box_in_play(
+                self.screen, self.text,
+                get_params_rect(self.rect_input_text),
+                font=self.font,
+                color_rect=BLACK_OPACITY,
+                color_font=WHITE,
+                font_size=Play_font_size
+            )
+
+        # Draw the microphone icon
         self.screen.blit(self.microphone_icon, self.icon_rect)
+
+        # Draw the toggle button
+        pygame.draw.rect(self.screen, PLAY_Button_color, self.toggle_button)  # Button color
+        button_font = pygame.font.Font(None, 24)
+        button_text = button_font.render("Выключить/включить текст", True, (255, 255, 255))
+        button_text_rect = button_text.get_rect(center=self.toggle_button.center)
+        self.screen.blit(button_text, button_text_rect)
 
     def _draw_error_text(self):
         """Display error messages when speech recognition fails."""
-        font = pygame.font.Font(None, 20)
-        error_texts = ["Я тебя не раслышал.", "Попробуй еще раз"]
-        y_positions = [self.icon_rect.top - 20, self.icon_rect.top - 10]
+        if self.is_text_visible:
+            font = pygame.font.Font(None, 20)
+            error_texts = ["Я тебя не раслышал.", "Попробуй снова"]
+            y_positions = [self.icon_rect.top - 20, self.icon_rect.top - 10]
 
-        for text, y_pos in zip(error_texts, y_positions):
-            self._draw_centered_text(font, text, (255, 0, 0), y_pos)
+            for text, y_pos in zip(error_texts, y_positions):
+                self._draw_centered_text(font, text, (255, 0, 0), y_pos)
 
     def _draw_centered_text(self, font, text, color, y_pos):
         """Draw centered text at a specified vertical position."""
@@ -145,6 +159,12 @@ class PlayScreen(Pages):
         elif event.type == pygame.MOUSEBUTTONDOWN and not self.is_finish:
             if self.icon_rect.collidepoint(event.pos):
                 self.start_recording()
+            elif self.toggle_button.collidepoint(event.pos):
+                # Toggle text visibility
+                self.is_text_visible = not self.is_text_visible
+                # If voice text was recognized, ensure it is visible
+                if self.states['is_ok_text']:
+                    self.is_text_visible = True
         elif event.type == pygame.MOUSEBUTTONUP and not self.is_finish:
             if self.icon_rect.collidepoint(event.pos) and self.states['recording']:
                 self.stop_recording()
@@ -210,6 +230,7 @@ class PlayScreen(Pages):
             self.states['text'], self.states['is_ok_text'] = recognize_speech()
 
             if self.states['is_ok_text']:
+                self.is_text_visible = True
                 self.text = f"{self.states['text']}\nЗагрузка..."
                 self.states['is_loading'] = True
 

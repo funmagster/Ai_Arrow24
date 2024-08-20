@@ -5,7 +5,7 @@ pygame.init()
 
 
 # API
-url_backend = 'localhost'
+url_backend = 'http://194.87.232.123:8000'
 
 # Project settings
 prefix = ''
@@ -60,8 +60,9 @@ Settings_font_size = 40
 Play_font_size = 20
 PLAY_Page_RECT_X, PLAY_Page_RECT_Y = 50, 50
 PLAY_Page_RECT_W, PLAY_Page_RECT_H = 850, 450
-BLACK_OPACITY = (0, 0, 0, 56)
-
+BLACK_OPACITY = (0, 0, 0, 100)
+PLAY_RECT_VIS_TEXT = (0, 10, 250, 40)
+PLAY_Button_color = (0, 128, 255, 200)
 MICROPHONE_ICON = prefix + 'img/microphone.png'
 MICROPHONE_ICON_RECT = (70, 70)
 MICROPHONE_ICON_RECT_indent = (50, 50)
