@@ -6,17 +6,17 @@ import sys
 package_dir = os.path.dirname(__file__)
 __all__ = []
 
-# Получаем пространство имен пакета 'pages'
+# Get the 'pages' package namespace
 package = sys.modules[__name__]
 
-# Импортируем все модули из пакета
+# Import all modules from the package
 for _, module_name, _ in pkgutil.iter_modules(path=[package_dir]):
     full_module_name = f"pages.{module_name}"
     module = importlib.import_module(full_module_name)
 
-    # Добавляем классы модуля в пространство имен пакета
+    # Add the module classes to the package namespace
     for attr_name in dir(module):
         attr = getattr(module, attr_name)
-        if isinstance(attr, type):  # Проверяем, что это класс
+        if isinstance(attr, type):  # Check that it's a class
             setattr(package, attr_name, attr)
             __all__.append(attr_name)
