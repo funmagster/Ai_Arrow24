@@ -1,10 +1,9 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from app.model.game import *
-from app.db.db import close_room, update_room, insert_history, update_history
+from app.db.db import close_room, insert_history, update_history
 from app.func.game import *
 
-from example_answer import example_ans
 routers = APIRouter()
 
 
