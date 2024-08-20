@@ -33,6 +33,9 @@ LOADING_MUSIC_PLAYLIST = {
         prefix + 'aduio/play/play-5.mp3',
         prefix + 'aduio/play/play-6.mp3',
         prefix + 'aduio/play/play-7.mp3',
+    ],
+    'error': [
+        prefix + 'aduio/error/error-1.mp3',
     ]
 }
 MIN_WIDTH, MIN_HEIGHT = 960, 540
@@ -74,7 +77,8 @@ ASPECT_RATIO = MIN_WIDTH / MIN_HEIGHT
 
 backgrounds = {
     'main_screen_background': prefix + 'img/pages/Main_page_img.png',
-    'settings_screen_background': prefix + 'img/pages/Settings_page_img.png'
+    'settings_screen_background': prefix + 'img/pages/Settings_page_img.png',
+    'error_screen_background': prefix + 'img/pages/Error_page_img.png'
 }
 
 fonts = {
