@@ -9,33 +9,39 @@ import os
 
 
 def string_to_pdf(text, pdf_file):
+    """
+    Forms a pdf file from the passed string
+    :param text: text to generate a pdf file
+    :param pdf_file: path to the pdf file to be generated
+    :return: None (creates a pdf file)
+    """
     c = canvas.Canvas(pdf_file, pagesize=letter)
     width, height = letter
 
-    # Регистрация шрифта, поддерживающего кириллицу
+    # Registering a font that supports Cyrillic alphabet
     pdfmetrics.registerFont(TTFont('DejaVuSans', 'DejaVuSans.ttf'))
 
     text_object = c.beginText(40, height - 40)
     text_object.setFont("DejaVuSans", 12)
 
-    # Устанавливаем максимальную ширину текста
-    max_width = width - 80  # Оставляем отступы по краям
+    # Set the maximum width of the text
+    max_width = width - 80  # Leave indents around the edges
 
-    # Высота строки в пикселях
+    # Row height in pixels
     line_height = 14
 
-    # Разбиваем текст на строки с учетом максимальной ширины
+    # Split the text into lines taking into account the maximum width
     lines = text.split('\n')
     wrapped_lines = []
     for line in lines:
         wrapped_lines.extend(textwrap.wrap(line, width=int(max_width/7)))
 
     for line in wrapped_lines:
-        # Проверка, достаточно ли места на странице для следующей строки
-        if text_object.getY() - line_height < 40:  # 40 - нижний отступ страницы
+        # Check if there is enough space on the page for the next line
+        if text_object.getY() - line_height < 40:  # 40 - page footer
             c.drawText(text_object)
-            c.showPage()  # Создание новой страницы
-            text_object = c.beginText(40, height - 40)  # Перенос текста на новую страницу
+            c.showPage()  # Creating a new page
+            text_object = c.beginText(40, height - 40)  # Transferring text to a new page
             text_object.setFont("DejaVuSans", 12)
 
         for text_highlighter in ("Intent:", "Generated characters:", "History of interaction"):
@@ -52,7 +58,7 @@ def string_to_pdf(text, pdf_file):
                 text_object.textOut(text_highlighter)
                 text_object.textOut(parts[1])
 
-                # Переход на новую строку после выделенного текста
+                # Move to a new line after selected text
                 text_object.textLine("")
                 break
         else:

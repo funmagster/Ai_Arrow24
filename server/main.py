@@ -7,8 +7,8 @@ from app.db.db import create_start_table
 
 app = FastAPI(
     title="DnD",
-    docs_url=None,      # Отключение Swagger UI
-    redoc_url=None,     # Отключение ReDoc
+    docs_url=None,      # Disabling Swagger UI
+    redoc_url=None,     # Disabling ReDoc
     openapi_url=None
 )
 

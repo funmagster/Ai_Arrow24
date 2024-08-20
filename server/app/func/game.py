@@ -92,7 +92,7 @@ class ObozLLM:
             SystemMessage(
                 content=prompts["system generated img"]
             ),
-            HumanMessage(content=prompts["generates img"] + description)
+            HumanMessage(content=prompts["generated img"] + description)
         ]
         return self.llm_model(messages).content
 
@@ -135,7 +135,6 @@ def split_characters(text):
 
 
 async def image_to_base64(image_path, format):
-
     with Image.open(image_path) as image:
         buffered = BytesIO()
         image.save(buffered, format=format)
