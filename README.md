@@ -60,15 +60,17 @@ The SECRET here is your own key to the organizer app. This is to prevent anyone 
    pip install -r requirements.txt
    ```
 
-3. Run:
+3. [Download](https://github.com/funmagster/Ai_Arrow24/blob/main/user_app/video/README.md) the video for the user app and paste it into the appropriate directory
+   
+4. Run:
 
-   3.1 To start the server (specify your host and port):
+   4.1 To start the server (specify your host and port):
    
    ```bash
    cd server
    uvicorn main:app --host 0.0.0.0 --port 8000 --reload
    ```
-   3.2 To run applications:
+   4.2 To run applications:
    ```bash
    cd admin_app
    python main.py
@@ -78,8 +80,7 @@ The SECRET here is your own key to the organizer app. This is to prevent anyone 
    cd user_app
    python main.py
    ```
-   
-4. [Download the video for the user app and paste it into the appropriate directory](https://github.com/funmagster/Ai_Arrow24/blob/main/user_app/video/README.md)
+
    
 ---
 
